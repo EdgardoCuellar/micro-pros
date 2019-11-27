@@ -57,6 +57,19 @@ def initialise():
     return registres, memorie
 
 
+def printState(c, p1, p2, Reg, Mem):
+    print("Cycle:")
+    print(c)
+    print("Pipeline 1:")
+    print(p1)
+    print("Pipeline 2:")
+    print(p2)
+    print("Registres:")
+    print(Reg)
+    print("Memoire:")
+    print(Mem)
+
+
 def load():
     pass
 
