@@ -1,0 +1,2 @@
+MOVE R1 R2
+MOVE R3 R1
