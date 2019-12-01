@@ -101,12 +101,25 @@ def imul():
 if __name__ == '__main__':
     file_name = str(input("Name of the prog > "))
 
-    initialise()
+    registres, memoires = initialise()
 
     with open(file_name) as prog_file:
         prog = prog_file.read().split("\n")
-        for command in prog:
-            commands = command.split(" ")
+        for c in range(0, len(prog), 2):
+            commands = prog[c].split(" ")
+            print(commands)
             if commands[0] == "LOAD":
-                print(commands[1])
+                load()
+                # print(commands[1])
+            elif commands[0] == "STORE":
+                store()
+            elif commands[0] == "MOVE":
+                move()
+            elif commands[0] == "MVC":
+                mvc()
+            elif commands[0] == "IADD":
+                iadd()
+            elif commands[0] == "IMUL":
+                imul()
+
 
