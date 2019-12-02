@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 Projet similateur de micro-processeur
-
 Creation d'un processeur virtuel"ProcesseurZ8000" avec ses 10 registres et ces deux
 pipelines et ses instructions.
-
 Created on Tuesday November 27 14:31:11 2019
 @author: Edgardo Cuellar Sanchez
 N° de matricule : 496612
@@ -16,67 +14,13 @@ Mail : Edgardo.Cuellar.Sanchez@ulb.be
 REGISTER_NAME = ["R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9"]
 
 
-class PipeLine:
-
-    def __init__(self):
-        self.instruct = ""
-
-    def instruction(self, i):
-        self.instruct = i
-
-    def ended(self):
-        return True
-
-    def if_instruct(self):
-        pass
-
-    def id_instruct(self):
-        pass
-
-    def ex_instruct(self):
-        pass
-
-    def mem_instruct(self):
-        pass
-
-    def wb_instruct(self):
-        pass
-
-
-class Registre:
-
-    def __init__(self, who, value):
-        self.who = who
-        self.value = value
-
-    def get_value(self):
-        return self.value
-
-    def set_value(self, value):
-        self.value = value
-
-
-class Memorie:
-
-    def __init__(self, who, value):
-        self.who = who
-        self.value = value
-
-    def get_value(self):
-        return self.value
-
-    def set_value(self, value):
-        self.value = value
-
-
 def initialise():
-    registres = []
-    memorie = []
-    for i in range(10):
-        registres.append(Registre(i, 0))
-    for i in range(16):
-        memorie.append(Memorie(i, 0))
-    return registres, memorie
+    registres = [0]*10
+    memories = [0]*16
+    pipelines = []
+    for _ in range(2):
+        pipelines.append([-1]*5)
+    return registres, memories, pipelines
 
 
 def printState(c, p1, p2, Reg, Mem):
@@ -92,38 +36,44 @@ def printState(c, p1, p2, Reg, Mem):
     print(Mem)
 
 
-def load():
+def simulateur(reg, mem, pip, prog, count):
+    fetch(prog, pip)
+    fetch(prog, pip)
+
+
+
+def fetch(instruction, pip):
+    if len(instruction) > 0:
+        pip[0] = instruction[0]
+        instruction.pop(0)
+
+
+def decode(what):
     pass
 
 
-def store():
+def execute(i):
     pass
 
 
-def move():
+def memory(mem, what):
     pass
 
 
-def mvc():
-    pass
-
-
-def iadd():
-    pass
-
-
-def imul():
+def write_back(register, memory, prog):
     pass
 
 
 if __name__ == '__main__':
     file_name = str(input("Name of the prog > "))
 
-    registres, memoires = initialise()
-    pipelines = [PipeLine(), PipeLine()]
+    registres, memoires, pipelines = initialise()
     prog = []
-
+    count = 1
     with open(file_name) as prog_file:
         prog = prog_file.read().split("\n")
 
-
+    while set(pipelines[0]) != {-1} and set(pipelines[1]) != {-1}:
+        simulateur(registres, memoires, pipelines, prog, count)
+        printState(count, pipelines[0], pipelines[1], registres, memoires)
+        count += 1
