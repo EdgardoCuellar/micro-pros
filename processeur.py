@@ -18,8 +18,14 @@ REGISTER_NAME = ["R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9"]
 
 class PipeLine:
 
-    def __init__(self, size):
-        self.size = size
+    def __init__(self):
+        self.instruct = ""
+
+    def instruction(self, i):
+        self.instruct = i
+
+    def ended(self):
+        return True
 
     def if_instruct(self):
         pass
@@ -43,11 +49,23 @@ class Registre:
         self.who = who
         self.value = value
 
+    def get_value(self):
+        return self.value
+
+    def set_value(self, value):
+        self.value = value
+
 
 class Memorie:
 
     def __init__(self, who, value):
         self.who = who
+        self.value = value
+
+    def get_value(self):
+        return self.value
+
+    def set_value(self, value):
         self.value = value
 
 
@@ -102,24 +120,10 @@ if __name__ == '__main__':
     file_name = str(input("Name of the prog > "))
 
     registres, memoires = initialise()
+    pipelines = [PipeLine(), PipeLine()]
+    prog = []
 
     with open(file_name) as prog_file:
         prog = prog_file.read().split("\n")
-        for c in range(0, len(prog), 2):
-            commands = prog[c].split(" ")
-            print(commands)
-            if commands[0] == "LOAD":
-                load()
-                # print(commands[1])
-            elif commands[0] == "STORE":
-                store()
-            elif commands[0] == "MOVE":
-                move()
-            elif commands[0] == "MVC":
-                mvc()
-            elif commands[0] == "IADD":
-                iadd()
-            elif commands[0] == "IMUL":
-                imul()
 
 
