@@ -74,8 +74,9 @@ def memory(mem, where, what):
         return mem[where]
 
 
-def write_back(register, memory, prog):
-    pass
+def write_back(register, value, where):
+    register[where] = value
+    return register
 
 
 if __name__ == '__main__':
