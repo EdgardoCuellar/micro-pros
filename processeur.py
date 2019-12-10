@@ -8,16 +8,16 @@ Created on Tuesday November 27 14:31:11 2019
 N° de matricule : 496612
 Mail : Edgardo.Cuellar.Sanchez@ulb.be
 """
-
+import time
 
 # GLOBAL VARIABLE
 REGISTER_NAME = ["R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9"]
-CYCLES = {"LOAD": [1, 2, 1],
-          "STORE": [1, 1, 1],
-          "MOVE": [1, 1, 1],
-          "MVC": [1, 1, 1],
-          "IADD": [1, 1, 1],
-          "IMUL": [3, 1, 1]}
+CYCLES = {"LOAD": [1, 2, 1, 1],
+          "STORE": [1, 1, 1, 1],
+          "MOVE": [1, 1, 1, 1],
+          "MVC": [1, 1, 1, 1],
+          "IADD": [1, 1, 1, 1],
+          "IMUL": [3, 1, 1, 1]}
 
 def initialise():
     registres = [0]*10
@@ -41,37 +41,38 @@ def printState(c, p1, p2, Reg, Mem):
     print(Mem)
 
 
-def simulateur(reg, mem, pip, prog, count, where):
-    for i in range(2):
-        fetch(prog, pip, i, where)
+def move(pip):
+    pass
 
 
-
-def move(pip, what):
+def fetch(pip, what):
     pip.insert(0, what)
     pip.pop(len(pip)-1)
     return pip
 
 
-def fetch(instruction, pip, who, where):
-    pip[who] = instruction[where]
-    where += 1
-
-
 def decode(what):
-    return CYCLES[what[0]]
+    return CYCLES[what]
 
 
-def execute(i):
-    pass
-
-
-def memory(mem, where, what):
-    if type(what) != int:
-        return mem[where]
+def execute(what, values, rg):
+    if what:
+        rp = 0
+        for nb in values:
+            rp += rg[REGISTER_NAME.index(nb)]
     else:
-        mem[where] = what
-        return mem[where]
+        rp = 1
+        for nb in values:
+            rp *= nb
+    return rp
+
+
+def memory(what, mem, rg, inst):
+    if what:
+        return mem[int(inst[2])]
+    else:
+        mem[int(inst[1])] = registres[REGISTER_NAME.index(rg)]
+        return mem
 
 
 def write_back(register, value, where):
@@ -83,23 +84,65 @@ if __name__ == '__main__':
     file_name = str(input("Name of the prog > "))
 
     registres, memoires, pipelines = initialise()
+    pip_block = []
     prog = []
-    decoded = []
+    value = ["-1"]*2
+    first = True
+    decoded = {}
     cursor_prog = 0
-    count = 1
+    count = 0
     with open(file_name) as prog_file:
         prog = prog_file.read().split("\n")
 
-    while set(pipelines[0]) != {-1} and set(pipelines[1]) != {-1}:
+    while (set(pipelines[0]) != {-1} and set(pipelines[1]) != {-1}) or first:
+        first = False
         # simulateur(registres, memoires, pipelines, prog, count, cursor_prog)
-        for i in range(2):
-            if cursor_prog < len(prog):
-                pipelines[i][0] = cursor_prog
+
+        for i in range(2):  # FETCH
+            print(len(prog))
+            if cursor_prog < len(prog)-1 and pipelines[i][0] == -1:
+                pipelines[i] = fetch(pipelines[i], cursor_prog)
                 cursor_prog += 1
-        count += 1
-        for i in range(2):
+
+        for i in range(2):  # DECODE
             if pipelines[i][1] != -1:
-                decoded.append(decode(prog[pipelines[i][1]]))
+                decoded[pipelines[i][1]] = decode(prog[pipelines[i][1]].split(" ")[0])
 
+        for i in range(2):  # EX
+            if pipelines[i][2] in decoded and decoded[pipelines[i][2]][0] > 0:
+                instruct = prog[pipelines[i][2]].split(" ")
+                if instruct[0] == "IADD":
+                    value[i] = execute(True, (instruct[1], instruct[2]), registres)
+                elif instruct[0] == "IMUL" and decoded[pipelines[i][2]][0] == 3:
+                    value[i] = execute(False, (instruct[1], instruct[2]), registres)
+                decoded[pipelines[i][2]][0] -= 1
 
+        for i in range(2):  # MEM
+            if pipelines[i][3] in decoded and decoded[pipelines[i][3]][0] > 0:
+                instruct = prog[pipelines[i][3]].split(" ")
+                if instruct[0] == "LOAD" and decoded[pipelines[i][3]][0] == 2:
+                    value[i] = memory(True, memoires, registres, instruct)
+                elif instruct[0] == "STORE":
+                    memoires = memory(True, memoires, registres, instruct)
+                decoded[pipelines[i][3]][0] -= 1
+
+        for i in range(2):  # WB:
+            if pipelines[i][4] in decoded and decoded[pipelines[i][4]][0] > 0:
+                instruct = prog[pipelines[i][4]].split(" ")
+                if instruct[0] != "STORE":
+                    if value[i] != "-1":
+                        registres[REGISTER_NAME.index(instruct[1])] = value[i]
+                    else:
+                        registres[REGISTER_NAME.index(instruct[1])] = int(instruct[2])
+                    value[i] = "-1"
+                decoded[pipelines[i][4]][0] -= 1
+
+        count += 1
         printState(count, pipelines[0], pipelines[1], registres, memoires)
+        for d in decoded:
+            print(str(d) + "  =>  " + str(decoded[d]))
+
+        for i in range(2):
+            pipelines[i] = move(pipelines)
+
+        time.sleep(5)
